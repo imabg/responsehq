@@ -8,19 +8,20 @@ package models
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createCompany = `-- name: CreateCompany :one
-INSERT INTO companies (id, name, created_by, subscription_id) VALUES ($1, $2, $3, $4) RETURNING id, name, created_by, is_active, subscription_id, created_at, updated_at
+INSERT INTO companies (id, name, created_by, subscription_id)
+VALUES ($1, $2, $3, $4)
+RETURNING id, name, created_by, is_active, subscription_id, created_at, updated_at
 `
 
 type CreateCompanyParams struct {
-	ID             uuid.UUID `json:"id"`
-	Name           string    `json:"name"`
-	CreatedBy      string    `json:"createdBy"`
-	SubscriptionID int32     `json:"subscriptionId"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	CreatedBy      string `json:"createdBy"`
+	SubscriptionID int32  `json:"subscriptionId"`
 }
 
 func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (Company, error) {
@@ -44,21 +45,27 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (C
 }
 
 const deleteCompany = `-- name: DeleteCompany :exec
-DELETE FROM companies WHERE id = $1
+DELETE
+FROM companies
+WHERE id = $1
 `
 
-func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteCompany(ctx context.Context, id string) error {
 	_, err := q.db.Exec(ctx, deleteCompany, id)
 	return err
 }
 
 const getAllDetailById = `-- name: GetAllDetailById :one
-SELECT companies.id, name, created_by, companies.is_active, subscription_id, companies.created_at, companies.updated_at, subscriptions.id, subscriptions.is_active, subscriptions.plan, subscriptions.created_at, subscriptions.updated_at, subscriptions.id, subscriptions.is_active, subscriptions.plan, subscriptions.created_at, subscriptions.updated_at FROM companies, subscriptions
-JOIN subscriptions ON companies.subscription_id = subscription.id WHERE companies.id = $1 LIMIT 1
+SELECT companies.id, name, created_by, companies.is_active, subscription_id, companies.created_at, companies.updated_at, subscriptions.id, subscriptions.is_active, subscriptions.plan, subscriptions.created_at, subscriptions.updated_at, subscriptions.id, subscriptions.is_active, subscriptions.plan, subscriptions.created_at, subscriptions.updated_at
+FROM companies,
+     subscriptions
+         JOIN subscriptions ON companies.subscription_id = subscription.id
+WHERE companies.id = $1
+LIMIT 1
 `
 
 type GetAllDetailByIdRow struct {
-	ID             uuid.UUID        `json:"id"`
+	ID             string           `json:"id"`
 	Name           string           `json:"name"`
 	CreatedBy      string           `json:"createdBy"`
 	IsActive       pgtype.Bool      `json:"isActive"`
@@ -77,7 +84,7 @@ type GetAllDetailByIdRow struct {
 	UpdatedAt_3    pgtype.Timestamp `json:"updatedAt3"`
 }
 
-func (q *Queries) GetAllDetailById(ctx context.Context, id uuid.UUID) (GetAllDetailByIdRow, error) {
+func (q *Queries) GetAllDetailById(ctx context.Context, id string) (GetAllDetailByIdRow, error) {
 	row := q.db.QueryRow(ctx, getAllDetailById, id)
 	var i GetAllDetailByIdRow
 	err := row.Scan(
@@ -103,11 +110,13 @@ func (q *Queries) GetAllDetailById(ctx context.Context, id uuid.UUID) (GetAllDet
 }
 
 const getDetailById = `-- name: GetDetailById :one
-SELECT  id, name, created_by, is_active, subscription_id, created_at, updated_at FROM companies
-WHERE id = $1 LIMIT 1
+SELECT id, name, created_by, is_active, subscription_id, created_at, updated_at
+FROM companies
+WHERE id = $1
+LIMIT 1
 `
 
-func (q *Queries) GetDetailById(ctx context.Context, id uuid.UUID) (Company, error) {
+func (q *Queries) GetDetailById(ctx context.Context, id string) (Company, error) {
 	row := q.db.QueryRow(ctx, getDetailById, id)
 	var i Company
 	err := row.Scan(
@@ -123,15 +132,29 @@ func (q *Queries) GetDetailById(ctx context.Context, id uuid.UUID) (Company, err
 }
 
 const updateCompany = `-- name: UpdateCompany :exec
-UPDATE companies set subscription_id=$1, is_active=$2 WHERE id = $2
+UPDATE companies
+set subscription_id=$1,
+    is_active=$2,
+    created_by = $3,
+    updated_at = $4
+WHERE id = $5
 `
 
 type UpdateCompanyParams struct {
-	SubscriptionID int32       `json:"subscriptionId"`
-	IsActive       pgtype.Bool `json:"isActive"`
+	SubscriptionID int32            `json:"subscriptionId"`
+	IsActive       pgtype.Bool      `json:"isActive"`
+	CreatedBy      string           `json:"createdBy"`
+	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
+	ID             string           `json:"id"`
 }
 
 func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) error {
-	_, err := q.db.Exec(ctx, updateCompany, arg.SubscriptionID, arg.IsActive)
+	_, err := q.db.Exec(ctx, updateCompany,
+		arg.SubscriptionID,
+		arg.IsActive,
+		arg.CreatedBy,
+		arg.UpdatedAt,
+		arg.ID,
+	)
 	return err
 }

@@ -2,7 +2,7 @@ package setup
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/imabg/responehq/internal/services/user"
+	"github.com/imabg/responehq/internal/services"
 	"github.com/imabg/responehq/models"
 	"log"
 	"net/http"
@@ -21,7 +21,11 @@ func Router(queries *models.Queries) {
 
 func getRoutes(queries *models.Queries) *mux.Router {
 	m := mux.NewRouter().PathPrefix("/api").Subrouter()
-	userCtx := user.NewUser(queries)
-	m.HandleFunc("/user/create", userCtx.Create).Methods("POST")
+	compCtx := services.NewCompany(queries)
+	userCtx := services.NewUser(queries, compCtx)
+	subCtx := services.NewSubscription(queries)
+	m.HandleFunc("/sub/create", subCtx.CreateSub).Methods("POST")
+	m.HandleFunc("/c/create", compCtx.CreateCompany).Methods("POST")
+	m.HandleFunc("/user/create", userCtx.CreateUser).Methods("POST")
 	return m
 }

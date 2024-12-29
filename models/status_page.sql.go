@@ -8,23 +8,23 @@ package models
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createStatusPage = `-- name: CreateStatusPage :one
-INSERT INTO status_page (id, url,support_url,logo_url,timezone,history_shows,company_id)
-VALUES ($1, $2,$3,$4,$5,$6, $7) RETURNING id, url, is_active, support_url, logo_url, timezone, history_shows, company_id, created_at, updated_at
+INSERT INTO status_page (id, url, support_url, logo_url, timezone, history_shows, company_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, url, is_active, support_url, logo_url, timezone, history_shows, company_id, created_at, updated_at
 `
 
 type CreateStatusPageParams struct {
-	ID           uuid.UUID   `json:"id"`
+	ID           string      `json:"id"`
 	Url          string      `json:"url"`
 	SupportUrl   pgtype.Text `json:"supportUrl"`
 	LogoUrl      pgtype.Text `json:"logoUrl"`
 	Timezone     pgtype.Text `json:"timezone"`
 	HistoryShows History     `json:"historyShows"`
-	CompanyID    uuid.UUID   `json:"companyId"`
+	CompanyID    string      `json:"companyId"`
 }
 
 func (q *Queries) CreateStatusPage(ctx context.Context, arg CreateStatusPageParams) (StatusPage, error) {
@@ -54,24 +54,26 @@ func (q *Queries) CreateStatusPage(ctx context.Context, arg CreateStatusPagePara
 }
 
 const getAllDetails = `-- name: GetAllDetails :one
-SELECT status_page.id, url, status_page.is_active, support_url, logo_url, timezone, history_shows, company_id, status_page.created_at, status_page.updated_at, companies.id, name, created_by, companies.is_active, subscription_id, companies.created_at, companies.updated_at, subscriptions.id, subscriptions.is_active, plan, subscriptions.created_at, subscriptions.updated_at FROM status_page
-INNER JOIN companies ON companies.id = status_page.company_id
-INNER JOIN subscriptions ON subscriptions.id = companies.subscription_id
-WHERE status_page.id = $1 LIMIT 1
+SELECT status_page.id, url, status_page.is_active, support_url, logo_url, timezone, history_shows, company_id, status_page.created_at, status_page.updated_at, companies.id, name, created_by, companies.is_active, subscription_id, companies.created_at, companies.updated_at, subscriptions.id, subscriptions.is_active, plan, subscriptions.created_at, subscriptions.updated_at
+FROM status_page
+         INNER JOIN companies ON companies.id = status_page.company_id
+         INNER JOIN subscriptions ON subscriptions.id = companies.subscription_id
+WHERE status_page.id = $1
+LIMIT 1
 `
 
 type GetAllDetailsRow struct {
-	ID             uuid.UUID        `json:"id"`
+	ID             string           `json:"id"`
 	Url            string           `json:"url"`
 	IsActive       pgtype.Bool      `json:"isActive"`
 	SupportUrl     pgtype.Text      `json:"supportUrl"`
 	LogoUrl        pgtype.Text      `json:"logoUrl"`
 	Timezone       pgtype.Text      `json:"timezone"`
 	HistoryShows   History          `json:"historyShows"`
-	CompanyID      uuid.UUID        `json:"companyId"`
+	CompanyID      string           `json:"companyId"`
 	CreatedAt      pgtype.Timestamp `json:"createdAt"`
 	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
-	ID_2           uuid.UUID        `json:"id2"`
+	ID_2           string           `json:"id2"`
 	Name           string           `json:"name"`
 	CreatedBy      string           `json:"createdBy"`
 	IsActive_2     pgtype.Bool      `json:"isActive2"`
@@ -85,7 +87,7 @@ type GetAllDetailsRow struct {
 	UpdatedAt_3    pgtype.Timestamp `json:"updatedAt3"`
 }
 
-func (q *Queries) GetAllDetails(ctx context.Context, id uuid.UUID) (GetAllDetailsRow, error) {
+func (q *Queries) GetAllDetails(ctx context.Context, id string) (GetAllDetailsRow, error) {
 	row := q.db.QueryRow(ctx, getAllDetails, id)
 	var i GetAllDetailsRow
 	err := row.Scan(
@@ -116,10 +118,13 @@ func (q *Queries) GetAllDetails(ctx context.Context, id uuid.UUID) (GetAllDetail
 }
 
 const getDetailAgainstId = `-- name: GetDetailAgainstId :one
-SELECT id, url, is_active, support_url, logo_url, timezone, history_shows, company_id, created_at, updated_at FROM status_page WHERE id=$1 LIMIT 1
+SELECT id, url, is_active, support_url, logo_url, timezone, history_shows, company_id, created_at, updated_at
+FROM status_page
+WHERE id = $1
+LIMIT 1
 `
 
-func (q *Queries) GetDetailAgainstId(ctx context.Context, id uuid.UUID) (StatusPage, error) {
+func (q *Queries) GetDetailAgainstId(ctx context.Context, id string) (StatusPage, error) {
 	row := q.db.QueryRow(ctx, getDetailAgainstId, id)
 	var i StatusPage
 	err := row.Scan(
@@ -138,7 +143,13 @@ func (q *Queries) GetDetailAgainstId(ctx context.Context, id uuid.UUID) (StatusP
 }
 
 const update = `-- name: Update :exec
-UPDATE status_page set url=$1, support_url=$2, logo_url=$3, timezone=$4, history_shows=$5 WHERE id = $6
+UPDATE status_page
+set url=$1,
+    support_url=$2,
+    logo_url=$3,
+    timezone=$4,
+    history_shows=$5
+WHERE id = $6
 `
 
 type UpdateParams struct {
@@ -147,7 +158,7 @@ type UpdateParams struct {
 	LogoUrl      pgtype.Text `json:"logoUrl"`
 	Timezone     pgtype.Text `json:"timezone"`
 	HistoryShows History     `json:"historyShows"`
-	ID           uuid.UUID   `json:"id"`
+	ID           string      `json:"id"`
 }
 
 func (q *Queries) Update(ctx context.Context, arg UpdateParams) error {

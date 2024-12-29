@@ -9,14 +9,14 @@ CREATE TYPE history AS ENUM (
 
 CREATE TABLE IF NOT EXISTS status_page
 (
-    id            uuid PRIMARY KEY,
+    id         TEXT PRIMARY KEY,
     url           TEXT      NOT NULL UNIQUE,
     is_active     BOOLEAN            DEFAULT TRUE,
     support_url   TEXT,
     logo_url      TEXT,
     timezone      TEXT,
     history_shows history   NOT NULL,
-    company_id    uuid      NOT NULL UNIQUE,
+    company_id TEXT NOT NULL,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
     created_at    timestamp NOT NULL DEFAULT NOW(),
     updated_at    timestamp

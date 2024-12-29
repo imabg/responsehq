@@ -8,7 +8,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -102,7 +101,7 @@ func (ns NullPlans) Value() (driver.Value, error) {
 }
 
 type Company struct {
-	ID             uuid.UUID        `json:"id"`
+	ID             string           `json:"id"`
 	Name           string           `json:"name"`
 	CreatedBy      string           `json:"createdBy"`
 	IsActive       pgtype.Bool      `json:"isActive"`
@@ -112,14 +111,14 @@ type Company struct {
 }
 
 type StatusPage struct {
-	ID           uuid.UUID        `json:"id"`
+	ID           string           `json:"id"`
 	Url          string           `json:"url"`
 	IsActive     pgtype.Bool      `json:"isActive"`
 	SupportUrl   pgtype.Text      `json:"supportUrl"`
 	LogoUrl      pgtype.Text      `json:"logoUrl"`
 	Timezone     pgtype.Text      `json:"timezone"`
 	HistoryShows History          `json:"historyShows"`
-	CompanyID    uuid.UUID        `json:"companyId"`
+	CompanyID    string           `json:"companyId"`
 	CreatedAt    pgtype.Timestamp `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamp `json:"updatedAt"`
 }
@@ -133,9 +132,10 @@ type Subscription struct {
 }
 
 type User struct {
-	ID        uuid.UUID        `json:"id"`
+	ID        string           `json:"id"`
 	Email     string           `json:"email"`
-	CompanyID uuid.UUID        `json:"companyId"`
+	CompanyID string           `json:"companyId"`
+	SubID     int32            `json:"subId"`
 	Name      string           `json:"name"`
 	Password  string           `json:"password"`
 	CreatedAt pgtype.Timestamp `json:"createdAt"`

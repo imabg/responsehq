@@ -20,8 +20,10 @@ LIMIT 1;
 -- name: UpdateCompany :exec
 UPDATE companies
 set subscription_id=$1,
-    is_active=$2
-WHERE id = $2;
+    is_active=$2,
+    created_by = $3,
+    updated_at = $4
+WHERE id = $5;
 
 -- name: DeleteCompany :exec
 DELETE

@@ -10,7 +10,9 @@ import (
 )
 
 const createSubscription = `-- name: CreateSubscription :one
-INSERT INTO subscriptions (plan) VALUES ($1) RETURNING id, is_active, plan, created_at, updated_at
+INSERT INTO subscriptions (plan)
+VALUES ($1)
+RETURNING id, is_active, plan, created_at, updated_at
 `
 
 func (q *Queries) CreateSubscription(ctx context.Context, plan Plans) (Subscription, error) {
@@ -27,8 +29,10 @@ func (q *Queries) CreateSubscription(ctx context.Context, plan Plans) (Subscript
 }
 
 const getSubscriptionById = `-- name: GetSubscriptionById :one
-SELECT id, is_active, plan, created_at, updated_at FROM subscriptions
-WHERE id = $1 LIMIT 1
+SELECT id, is_active, plan, created_at, updated_at
+FROM subscriptions
+WHERE id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetSubscriptionById(ctx context.Context, id int64) (Subscription, error) {
@@ -45,8 +49,9 @@ func (q *Queries) GetSubscriptionById(ctx context.Context, id int64) (Subscripti
 }
 
 const listAllSubscriptions = `-- name: ListAllSubscriptions :many
-SELECT id, is_active, plan, created_at, updated_at FROM subscriptions
-WHERE is_active=true
+SELECT id, is_active, plan, created_at, updated_at
+FROM subscriptions
+WHERE is_active = true
 ORDER BY created_at
 `
 
@@ -77,7 +82,10 @@ func (q *Queries) ListAllSubscriptions(ctx context.Context) ([]Subscription, err
 }
 
 const markSubscriptionInactive = `-- name: MarkSubscriptionInactive :one
-UPDATE subscriptions set is_active = false WHERE id = $1 RETURNING id, is_active, plan, created_at, updated_at
+UPDATE subscriptions
+set is_active = false
+WHERE id = $1
+RETURNING id, is_active, plan, created_at, updated_at
 `
 
 func (q *Queries) MarkSubscriptionInactive(ctx context.Context, id int64) (Subscription, error) {
@@ -94,7 +102,9 @@ func (q *Queries) MarkSubscriptionInactive(ctx context.Context, id int64) (Subsc
 }
 
 const updateSubscriptionById = `-- name: UpdateSubscriptionById :exec
-UPDATE subscriptions set plan = $1 WHERE id = $2
+UPDATE subscriptions
+set plan = $1
+WHERE id = $2
 `
 
 type UpdateSubscriptionByIdParams struct {
