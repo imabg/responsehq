@@ -3,9 +3,11 @@ package services
 import (
 	"github.com/google/uuid"
 	"github.com/imabg/responehq/models"
+	"github.com/imabg/responehq/pkg/errors"
 	"github.com/imabg/responehq/pkg/logger"
 	"github.com/imabg/responehq/pkg/respond"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/imabg/responehq/pkg/types"
+	"github.com/mdobak/go-xerrors"
 	"net/http"
 )
 
@@ -15,49 +17,76 @@ type IUser interface {
 
 type User struct {
 	queries *models.Queries
-	ctxc    ICompany
+	ctxC    ICompany
 }
 
 func NewUser(queries *models.Queries, companyCtx ICompany) IUser {
 	return &User{
 		queries: queries,
-		ctxc:    companyCtx,
+		ctxC:    companyCtx,
 	}
 }
 
 func (u *User) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	user := &models.User{}
-	err := respond.GetBody(ctx, r, user)
+	var user types.AddUserDTO
+	err := respond.GetBody(r, &user)
 	if err != nil {
-		respond.StatusInternalServerError(ctx, w, err)
+		logger.Error(ctx, "while reading request body: Create user", err)
+		respond.SendWithError(w, &errors.Error{
+			Code:       http.StatusBadRequest,
+			Message:    err.Error(),
+			Err:        err,
+			StatusCode: http.StatusBadRequest,
+		})
+		return
 	}
 	hashPwd := encryptPassword(user.Password)
+	if hashPwd == "" {
+		logger.Error(ctx, "while encrypting password: Create user", xerrors.New("password is empty"))
+		return
+	}
+
 	data, err := u.queries.CreateUser(ctx, models.CreateUserParams{
-		Email:     user.Email,
-		Name:      user.Name,
-		Password:  hashPwd,
-		CompanyID: user.CompanyID,
-		SubID:     user.SubID,
-		ID:        uuid.New().String(),
+		Email:          user.Email,
+		Name:           user.Name,
+		Password:       hashPwd,
+		CompanyID:      user.CompanyID,
+		SubscriptionID: user.SubscriptionID,
+		ID:             uuid.New().String(),
 	})
 	if err != nil {
-		logger.Error(ctx, "user.Create", err)
+		logger.DBError(ctx, "user.Create", err.Error())
+		respond.SendWithError(w, &errors.Error{
+			Code:       http.StatusInternalServerError,
+			Type:       errors.DATABASE_ERROR,
+			Message:    err.Error(),
+			Err:        err,
+			StatusCode: http.StatusInternalServerError,
+		})
 		return
 	}
-
-	//FIXME: as of now `is_active` and `updated_at` are not updated
-	err = u.ctxc.UpdateCompany(r, models.UpdateCompanyParams{
+	err = u.ctxC.UpdateCompanyOp(ctx, types.UpdateCompanyDTO{
 		CreatedBy:      data.ID,
-		ID:             data.CompanyID,
-		SubscriptionID: data.SubID,
-		IsActive:       pgtype.Bool{Bool: true},
+		CompanyID:      data.CompanyID,
+		SubscriptionID: data.SubscriptionID,
+		IsActive:       true,
 	})
+
 	if err != nil {
-		logger.Error(ctx, "async op: user.Create", err)
+		logger.DBError(ctx, "while updating company createdBy", err.Error())
+		respond.SendWithError(w, &errors.Error{
+			Code:       http.StatusInternalServerError,
+			Type:       errors.DATABASE_ERROR,
+			Message:    err.Error(),
+			Err:        err,
+			StatusCode: http.StatusInternalServerError,
+		})
 		return
 	}
-
-	respond.StatusOk(ctx, w, data)
-	return
+	respond.Send(ctx, w, respond.Response{
+		Code:    http.StatusOK,
+		Message: "User created successfully",
+		Data:    data,
+	})
 }

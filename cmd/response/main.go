@@ -4,6 +4,7 @@ import (
 	"github.com/imabg/responehq/config"
 	"github.com/imabg/responehq/internal/db"
 	"github.com/imabg/responehq/pkg/logger"
+	"github.com/imabg/responehq/pkg/validate"
 	"github.com/imabg/responehq/setup"
 )
 
@@ -18,6 +19,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	validate.NewValidator()
 	setup.Router(q)
-	select {}
 }

@@ -1,5 +1,5 @@
 -- name: CreateUser :one
-INSERT INTO users (id, email, name, password, company_id, sub_id)
+INSERT INTO users (id, email, name, password, company_id, subscription_id)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 

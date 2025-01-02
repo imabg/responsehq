@@ -10,5 +10,5 @@ CREATE TABLE IF NOT EXISTS subscriptions
     is_active  BOOLEAN            DEFAULT TRUE,
     plan       plans     NOT NULL,
     created_at timestamp NOT NULL DEFAULT NOW(),
-    updated_at timestamp
+    updated_at timestamp NOT NULL DEFAULT NOW()
 );

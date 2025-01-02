@@ -132,12 +132,12 @@ type Subscription struct {
 }
 
 type User struct {
-	ID        string           `json:"id"`
-	Email     string           `json:"email"`
-	CompanyID string           `json:"companyId"`
-	SubID     int32            `json:"subId"`
-	Name      string           `json:"name"`
-	Password  string           `json:"password"`
-	CreatedAt pgtype.Timestamp `json:"createdAt"`
-	UpdatedAt pgtype.Timestamp `json:"updatedAt"`
+	ID             string           `json:"id"`
+	Email          string           `json:"email"`
+	CompanyID      string           `json:"companyId"`
+	SubscriptionID int32            `json:"subscriptionId"`
+	Name           string           `json:"name"`
+	Password       string           `json:"password"`
+	CreatedAt      pgtype.Timestamp `json:"createdAt"`
+	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
 }

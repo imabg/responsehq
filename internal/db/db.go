@@ -16,12 +16,12 @@ func SetupDb(connStr string) (*models.Queries, error) {
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, connStr)
 	if err != nil {
-		logger.Error(ctx, "while connecting pgsql", err)
+		logger.DBError(ctx, "while connecting pgsql", err.Error())
 		return nil, err
 	}
 	//defer closeCon(ctx, conn)
 	if err = conn.Ping(ctx); err != nil {
-		logger.Error(ctx, "while pinging pgsql", err)
+		logger.DBError(ctx, "while pinging pgsql", err.Error())
 		closeCon(ctx, conn)
 	}
 	logger.Info(ctx, "database is connected successfully", nil)
@@ -32,7 +32,7 @@ func SetupDb(connStr string) (*models.Queries, error) {
 func closeCon(ctx context.Context, conn *pgx.Conn) {
 	err := conn.Close(ctx)
 	if err != nil {
-		logger.Error(ctx, "while closing conn", err)
+		logger.DBError(ctx, "while closing conn", err.Error())
 		panic(err)
 	}
 }
@@ -40,23 +40,23 @@ func closeCon(ctx context.Context, conn *pgx.Conn) {
 func RunMigration(connStr string) error {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		logger.Error(context.Background(), "while connecting postgres", err)
+		logger.DBError(context.Background(), "while connecting postgres", err.Error())
 		return err
 	}
 	defer runMigrationCleanup(db)
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		logger.Error(context.Background(), "while connecting postgres", err)
+		logger.DBError(context.Background(), "while connecting postgres", err.Error())
 		return err
 	}
 	m, err := migrate.NewWithDatabaseInstance("file://internal/schemas/", "postgres", driver)
 	if err != nil {
-		logger.Error(context.Background(), "while connecting postgres", err)
+		logger.DBError(context.Background(), "while connecting postgres", err.Error())
 		return err
 	}
 	if err := m.Up(); err != nil {
 		if err != migrate.ErrNoChange {
-			logger.Error(context.Background(), "while running migration", err)
+			logger.DBError(context.Background(), "while running migration", err.Error())
 			return err
 		}
 	}
@@ -67,6 +67,6 @@ func RunMigration(connStr string) error {
 func runMigrationCleanup(db *sql.DB) {
 	err := db.Close()
 	if err != nil {
-		logger.Error(context.Background(), "while closing db: Migrations", err)
+		logger.DBError(context.Background(), "while closing db: Migrations", err.Error())
 	}
 }

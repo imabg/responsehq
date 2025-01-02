@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"github.com/mdobak/go-xerrors"
 	"log/slog"
 	"os"
@@ -25,16 +26,13 @@ func Info(ctx context.Context, msg string, info any) {
 	l.InfoContext(ctx, msg, "info", info)
 }
 
-func Debug(ctx context.Context, msg string, info any) {
-	l.DebugContext(ctx, msg, "debug", info)
+func Error(ctx context.Context, msg string, info error) {
+	trace := xerrors.StackTrace(xerrors.New(info))
+	fmt.Println(trace)
+	l.ErrorContext(ctx, msg, "error", info.Error())
 }
 
-func Error(ctx context.Context, msg string, info any) {
-	infoStr, ok := info.(string)
-	if ok {
-		l.ErrorContext(ctx, msg, "error", infoStr)
-	} else {
-		trace := xerrors.StackTrace(info.(error))
-		l.ErrorContext(ctx, msg, "error", trace)
-	}
+func DBError(ctx context.Context, msg string, message string) {
+	wrpErr := xerrors.New(message)
+	l.ErrorContext(ctx, msg, "error", wrpErr)
 }

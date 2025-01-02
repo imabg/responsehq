@@ -10,18 +10,18 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, email, name, password, company_id, sub_id)
+INSERT INTO users (id, email, name, password, company_id, subscription_id)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, email, company_id, sub_id, name, password, created_at, updated_at
+RETURNING id, email, company_id, subscription_id, name, password, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	Password  string `json:"password"`
-	CompanyID string `json:"companyId"`
-	SubID     int32  `json:"subId"`
+	ID             string `json:"id"`
+	Email          string `json:"email"`
+	Name           string `json:"name"`
+	Password       string `json:"password"`
+	CompanyID      string `json:"companyId"`
+	SubscriptionID int32  `json:"subscriptionId"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -31,14 +31,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Name,
 		arg.Password,
 		arg.CompanyID,
-		arg.SubID,
+		arg.SubscriptionID,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.CompanyID,
-		&i.SubID,
+		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
 		&i.CreatedAt,
@@ -48,7 +48,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, company_id, sub_id, name, password, created_at, updated_at
+SELECT id, email, company_id, subscription_id, name, password, created_at, updated_at
 FROM users
 WHERE email = $1
   and is_active = TRUE
@@ -61,7 +61,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Email,
 		&i.CompanyID,
-		&i.SubID,
+		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
 		&i.CreatedAt,
@@ -71,7 +71,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, company_id, sub_id, name, password, created_at, updated_at
+SELECT id, email, company_id, subscription_id, name, password, created_at, updated_at
 FROM users
 WHERE id = $1
 `
@@ -83,7 +83,7 @@ func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
 		&i.ID,
 		&i.Email,
 		&i.CompanyID,
-		&i.SubID,
+		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
 		&i.CreatedAt,

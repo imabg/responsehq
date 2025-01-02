@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS companies
     subscription_id INT       NOT NULL,
     FOREIGN KEY (subscription_id) REFERENCES subscriptions (id),
     created_at      timestamp NOT NULL DEFAULT NOW(),
-    updated_at      timestamp
+    updated_at timestamp NOT NULL DEFAULT NOW()
 );

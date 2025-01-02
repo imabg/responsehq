@@ -19,5 +19,5 @@ CREATE TABLE IF NOT EXISTS status_page
     company_id TEXT NOT NULL,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
     created_at    timestamp NOT NULL DEFAULT NOW(),
-    updated_at    timestamp
+    updated_at timestamp NOT NULL DEFAULT NOW()
 );
