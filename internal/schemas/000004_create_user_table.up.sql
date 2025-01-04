@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users
     subscription_id INT       NOT NULL,
     name       TEXT      NOT NULL,
     password   TEXT      NOT NULL,
+    is_active BOOL DEFAULT TRUE,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
     FOREIGN KEY (subscription_id) REFERENCES subscriptions (id),
     UNIQUE (email, company_id),

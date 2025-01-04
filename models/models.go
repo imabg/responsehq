@@ -138,6 +138,7 @@ type User struct {
 	SubscriptionID int32            `json:"subscriptionId"`
 	Name           string           `json:"name"`
 	Password       string           `json:"password"`
+	IsActive       pgtype.Bool      `json:"isActive"`
 	CreatedAt      pgtype.Timestamp `json:"createdAt"`
 	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
 }

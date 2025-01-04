@@ -7,3 +7,8 @@ type AddUserDTO struct {
 	CompanyID      string `validate:"required,uuid4" json:"companyId"`
 	Password       string `validate:"required,min=8" json:"password"`
 }
+
+type UserLoginDTO struct {
+	Email    string `validate:"required,email" json:"email"`
+	Password string `validate:"required,min=8" json:"password"`
+}

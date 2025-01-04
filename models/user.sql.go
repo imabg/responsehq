@@ -12,7 +12,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, email, name, password, company_id, subscription_id)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, email, company_id, subscription_id, name, password, created_at, updated_at
+RETURNING id, email, company_id, subscription_id, name, password, is_active, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -41,6 +41,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -48,7 +49,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, company_id, subscription_id, name, password, created_at, updated_at
+SELECT id, email, company_id, subscription_id, name, password, is_active, created_at, updated_at
 FROM users
 WHERE email = $1
   and is_active = TRUE
@@ -64,6 +65,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -71,7 +73,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, company_id, subscription_id, name, password, created_at, updated_at
+SELECT id, email, company_id, subscription_id, name, password, is_active, created_at, updated_at
 FROM users
 WHERE id = $1
 `
@@ -86,6 +88,7 @@ func (q *Queries) GetUserById(ctx context.Context, id string) (User, error) {
 		&i.SubscriptionID,
 		&i.Name,
 		&i.Password,
+		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

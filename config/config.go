@@ -10,9 +10,13 @@ var once sync.Once
 var c *Config
 
 type Config struct {
-	PostgresURL string `mapstructure:"POSTGRES_URL"`
-	JwtSecret   string `mapstructure:"JWT_SECRET"`
-	JwtExpires  int32  `mapstructure:"JWT_EXPIRES"`
+	PostgresURL    string `mapstructure:"POSTGRES_URL"`
+	JwtSecret      string `mapstructure:"JWT_SECRET"`
+	PwdMemory      uint32 `mapstructure:"PWD_MEMORY"`
+	PwdIterations  uint32 `mapstructure:"PWD_ITERATIONS"`
+	PwdParallelism uint8  `mapstructure:"PWD_PARALLELISM"`
+	PwdSaltLength  uint32 `mapstructure:"PWD_SALT_LENGTH"`
+	PwsKeyLength   uint32 `mapstructure:"PWD_KEY_LENGTH"`
 }
 
 func NewConfig() *Config {
