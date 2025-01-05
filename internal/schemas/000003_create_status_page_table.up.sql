@@ -7,7 +7,7 @@ CREATE TYPE history AS ENUM (
     '365'
     );
 
-CREATE TABLE IF NOT EXISTS status_page
+CREATE TABLE IF NOT EXISTS pages
 (
     id         TEXT PRIMARY KEY,
     url           TEXT      NOT NULL UNIQUE,
@@ -16,8 +16,11 @@ CREATE TABLE IF NOT EXISTS status_page
     logo_url      TEXT,
     timezone      TEXT,
     history_shows history   NOT NULL,
+    send_notification BOOLEAN NOT NULL,
     company_id TEXT NOT NULL,
+    subscription_id   INT     NOT NULL,
     FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions (id),
     created_at    timestamp NOT NULL DEFAULT NOW(),
     updated_at timestamp NOT NULL DEFAULT NOW()
 );

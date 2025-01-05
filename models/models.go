@@ -100,6 +100,50 @@ func (ns NullPlans) Value() (driver.Value, error) {
 	return string(ns.Plans), nil
 }
 
+type SubscriberType string
+
+const (
+	SubscriberTypeMail    SubscriberType = "mail"
+	SubscriberTypeWebhook SubscriberType = "webhook"
+	SubscriberTypeSlack   SubscriberType = "slack"
+	SubscriberTypeMsTeams SubscriberType = "ms_teams"
+)
+
+func (e *SubscriberType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SubscriberType(s)
+	case string:
+		*e = SubscriberType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SubscriberType: %T", src)
+	}
+	return nil
+}
+
+type NullSubscriberType struct {
+	SubscriberType SubscriberType `json:"subscriberType"`
+	Valid          bool           `json:"valid"` // Valid is true if SubscriberType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSubscriberType) Scan(value interface{}) error {
+	if value == nil {
+		ns.SubscriberType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SubscriberType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSubscriberType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SubscriberType), nil
+}
+
 type Company struct {
 	ID             string           `json:"id"`
 	Name           string           `json:"name"`
@@ -110,17 +154,42 @@ type Company struct {
 	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
 }
 
-type StatusPage struct {
+type Incident struct {
 	ID           string           `json:"id"`
-	Url          string           `json:"url"`
+	Name         string           `json:"name"`
+	IsBackfilled pgtype.Bool      `json:"isBackfilled"`
+	Body         pgtype.Text      `json:"body"`
 	IsActive     pgtype.Bool      `json:"isActive"`
-	SupportUrl   pgtype.Text      `json:"supportUrl"`
-	LogoUrl      pgtype.Text      `json:"logoUrl"`
-	Timezone     pgtype.Text      `json:"timezone"`
-	HistoryShows History          `json:"historyShows"`
+	PageID       string           `json:"pageId"`
 	CompanyID    string           `json:"companyId"`
 	CreatedAt    pgtype.Timestamp `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamp `json:"updatedAt"`
+}
+
+type Page struct {
+	ID               string           `json:"id"`
+	Url              string           `json:"url"`
+	IsActive         pgtype.Bool      `json:"isActive"`
+	SupportUrl       pgtype.Text      `json:"supportUrl"`
+	LogoUrl          pgtype.Text      `json:"logoUrl"`
+	Timezone         pgtype.Text      `json:"timezone"`
+	HistoryShows     History          `json:"historyShows"`
+	SendNotification bool             `json:"sendNotification"`
+	CompanyID        string           `json:"companyId"`
+	SubscriptionID   int32            `json:"subscriptionId"`
+	CreatedAt        pgtype.Timestamp `json:"createdAt"`
+	UpdatedAt        pgtype.Timestamp `json:"updatedAt"`
+}
+
+type Subscriber struct {
+	ID         string           `json:"id"`
+	Type       SubscriberType   `json:"type"`
+	Value      string           `json:"value"`
+	IsVerified pgtype.Bool      `json:"isVerified"`
+	IsArchived pgtype.Bool      `json:"isArchived"`
+	PageID     string           `json:"pageId"`
+	CreatedAt  pgtype.Timestamp `json:"createdAt"`
+	UpdatedAt  pgtype.Timestamp `json:"updatedAt"`
 }
 
 type Subscription struct {
